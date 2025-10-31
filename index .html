@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Limpieza del Hogar</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7f6;
+      color: #003d33;
+      margin: 0;
+    }
+    header {
+      background-color: #00897b;
+      color: white;
+      text-align: center;
+      padding: 20px 10px;
+      border-bottom: 4px solid #00695c;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.8em;
+    }
+    nav {
+      margin-top: 15px;
+    }
+    .tab-button {
+      background-color: white;
+      color: #004d40;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 25px;
+      margin: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-weight: bold;
+    }
+    .tab-button:hover,
+    .tab-button.active {
+      background-color: #004d40;
+      color: white;
+    }
+    main {
+      max-width: 900px;
+      margin: 25px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    input, select, button {
+      display: block;
+      margin: 10px 0;
+      padding: 8px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #00897b;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00695c;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #b2dfdb;
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      background-color: #004d40;
+      color: white;
+      margin-top: 30px;
+    }
+    .charts-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .chart-card {
+      background: #e0f2f1;
+      padding: 15px;
+      border-radius: 12px;
+      flex: 1 1 350px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    /* Responsive */
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.3em;
+      }
+      .tab-button {
+        padding: 8px;
+        font-size: 0.9em;
+      }
+      main {
+        margin: 10px;
+        padding: 15px;
+      }
+      .charts-container {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sistema de Limpieza del Hogar</h1>
+    <nav>
+      <button class="tab-button active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-button" data-tab="tareas">Nueva Tarea</button>
+      <button class="tab-button" data-tab="perfiles">Perfiles</button>
+      <button class="tab-button" data-tab="notificaciones">Notificaciones</button>
+      <button class="tab-button" data-tab="estadisticas">Estadísticas</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Dashboard -->
+    <section id="dashboard" class="tab-content active">
+      <h2>Bienvenido al Sistema</h2>
+      <p>Aquí podrás gestionar las tareas del hogar, los miembros y visualizar estadísticas.</p>
+    </section>
+
+    <!-- Nueva Tarea -->
+    <section id="tareas" class="tab-content">
+      <h2>Nueva Tarea</h2>
+      <label>Descripción:</label>
+      <input type="text" id="descripcion" placeholder="Ejemplo: Limpiar cocina">
+      <label>Responsable:</label>
+      <select id="responsable"></select>
+      <label>Estado:</label>
+      <select id="estado">
+        <option value="pendiente">Pendiente</option>
+        <option value="completada">Completada</option>
+      </select>
+      <button id="agregarTarea">Agregar Tarea</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th>Responsable</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="tablaTareas"></tbody>
+      </table>
+    </section>
+
+    <!-- Perfiles -->
+    <section id="perfiles" class="tab-content">
+      <h2>Miembros del Hogar</h2>
+      <label>Nombre:</label>
+      <input type="text" id="nombreMiembro" placeholder="Escribe un nombre">
+      <button id="agregarMiembro">Agregar</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+          </tr>
+        </thead>
+        <tbody id="tablaMiembros"></tbody>
+      </table>
+    </section>
+
+    <!-- Notificaciones -->
+    <section id="notificaciones" class="tab-content">
+      <h2>Notificaciones</h2>
+      <p>No hay notificaciones nuevas.</p>
+    </section>
+
+    <!-- Estadísticas -->
+    <section id="estadisticas" class="tab-content">
+      <h2>Estadísticas del Hogar</h2>
+      <div class="charts-container">
+        <div class="chart-card">
+          <h3>Tareas Completadas vs Pendientes</h3>
+          <canvas id="graficaBarras"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Tareas por Miembro</h3>
+          <canvas id="graficaCircular"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Sistema de Limpieza del Hogar</p>
+  </footer>
+
+  <script>
+    // Cambiar entre secciones
+    const buttons = document.querySelectorAll('.tab-button');
+    const sections = document.querySelectorAll('.tab-content');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sections.forEach(sec => sec.classList.remove('active'));
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Datos iniciales
+    let miembros = [];
+    let tareas = [];
+
+    // Referencias DOM
+    const nombreInput = document.getElementById('nombreMiembro');
+    const tablaMiembros = document.getElementById('tablaMiembros');
+    const selectResponsable = document.getElementById('responsable');
+    const descripcionInput = document.getElementById('descripcion');
+    const estadoSelect = document.getElementById('estado');
+    const tablaTareas = document.getElementById('tablaTareas');
+
+    // Agregar miembro
+    document.getElementById('agregarMiembro').addEventListener('click', () => {
+      const nombre = nombreInput.value.trim();
+      if (nombre) {
+        miembros.push(nombre);
+        actualizarMiembros();
+        nombreInput.value = '';
+      }
+    });
+
+    // Actualizar lista de miembros
+    function actualizarMiembros() {
+      tablaMiembros.innerHTML = '';
+      selectResponsable.innerHTML = '<option value="">Selecciona...</option>';
+      miembros.forEach(nombre => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${nombre}</td>`;
+        tablaMiembros.appendChild(row);
+        const option = document.createElement('option');
+        option.value = nombre;
+        option.textContent = nombre;
+        selectResponsable.appendChild(option);
+      });
+      actualizarGraficas();
+    }
+
+    // Agregar tarea
+    document.getElementById('agregarTarea').addEventListener('click', () => {
+      const desc = descripcionInput.value.trim();
+      const resp = selectResponsable.value;
+      const est = estadoSelect.value;
+      if (desc && resp) {
+        tareas.push({ descripcion: desc, responsable: resp, estado: est });
+        actualizarTareas();
+        descripcionInput.value = '';
+        estadoSelect.value = 'pendiente';
+      }
+    });
+
+    // Actualizar tabla tareas
+    function actualizarTareas() {
+      tablaTareas.innerHTML = '';
+      tareas.forEach(t => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${t.descripcion}</td><td>${t.responsable}</td><td>${t.estado}</td>`;
+        tablaTareas.appendChild(row);
+      });
+      actualizarGraficas();
+    }
+
+    // Gráficas con Chart.js
+    const ctxBarras = document.getElementById('graficaBarras').getContext('2d');
+    const ctxCircular = document.getElementById('graficaCircular').getContext('2d');
+
+    let graficaBarras = new Chart(ctxBarras, {
+      type: 'bar',
+      data: {
+        labels: ['Pendientes', 'Completadas'],
+        datasets: [{
+          label: 'Número de tareas',
+          data: [0, 0],
+          backgroundColor: ['#fbc02d', '#4caf50']
+        }]
+      },
+      options: { responsive: true }
+    });
+
+    let graficaCircular = new Chart(ctxCircular, {
+      type: 'doughnut',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Tareas por miembro',
+          data: [],
+          backgroundColor: ['#80cbc4', '#4db6ac', '#26a69a', '#00796b', '#004d40']
+        }]
+      },
+      options: { responsive: true }
+    });
+
+    // Actualizar gráficas
+    function actualizarGraficas() {
+      const pendientes = tareas.filter(t => t.estado === 'pendiente').length;
+      const completadas = tareas.filter(t => t.estado === 'completada').length;
+      graficaBarras.data.datasets[0].data = [pendientes, completadas];
+      graficaBarras.update();
+
+      const conteo = {};
+      tareas.forEach(t => {
+        conteo[t.responsable] = (conteo[t.responsable] || 0) + 1;
+      });
+      graficaCircular.data.labels = Object.keys(conteo);
+      graficaCircular.data.datasets[0].data = Object.values(conteo);
+      graficaCircular.update();
+    }
+  </script>
+</body>
+</html>
